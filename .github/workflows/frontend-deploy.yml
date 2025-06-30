@@ -1,0 +1,26 @@
+name: Frontend - Test & Deploy
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [backend-deployed]
+
+jobs:
+  test-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm run test
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Deploy frontend
+        run: echo "Deploying frontend..."
