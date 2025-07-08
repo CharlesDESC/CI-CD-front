@@ -3,7 +3,7 @@ import { DisplayInfo } from "../displayInfo/displayInfo";
 
 const SERVER_URL = process.env.REACT_APP_SERVER_URL;
 
-export const LoginForm = () => {
+const LoginForm = () => {
 	const [username, setUsername] = useState("");
 	const [password, setPassword] = useState("");
 	const [isAdmin, setIsAdmin] = useState(false);
@@ -81,3 +81,5 @@ export const LoginForm = () => {
 	}
 	return <DisplayInfo />;
 };
+
+export default LoginForm;

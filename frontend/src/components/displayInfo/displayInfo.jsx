@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 const SERVER_URL = process.env.REACT_APP_SERVER_URL;
 
-export const DisplayInfo = () => {
+const DisplayInfo = () => {
 	const [users, setUsers] = useState([]);
 	const [error, setError] = useState("");
 
@@ -71,3 +71,5 @@ export const DisplayInfo = () => {
 		</div>
 	);
 };
+
+export default DisplayInfo;

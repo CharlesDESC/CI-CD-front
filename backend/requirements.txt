@@ -4,3 +4,6 @@ uvicorn
 PyJWT
 pydantic
 python-dotenv
+httpx
+pytest-asynci
+pytesto

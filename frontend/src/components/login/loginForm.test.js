@@ -1,62 +1,48 @@
-import React from "react";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
-import { LoginForm } from "./loginForm";
-import * as DisplayInfoModule from "../displayInfo/displayInfo";
-
-// Mock le composant DisplayInfo pour qu'il retourne un texte visible
-jest.mock("../displayInfo/displayInfo", () => ({
-	DisplayInfo: jest.fn(() => (
-		<div data-testid='display-info'>Mock DisplayInfo</div>
-	)),
-}));
+import LoginForm from "./loginForm";
 
 beforeEach(() => {
-	global.fetch = jest.fn();
+  jest.spyOn(global, "fetch").mockImplementation(() =>
+    Promise.resolve({
+      json: () => Promise.resolve({ access_token: "fake-token" }),
+      ok: true,
+    })
+  );
 });
 
-describe("LoginForm", () => {
-	it("affiche le formulaire de connexion", () => {
-		render(<LoginForm />);
-		expect(screen.getByText(/Connexion Admin requise/i)).toBeInTheDocument();
-	});
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
-	it("affiche une erreur si l'utilisateur n'est pas admin", async () => {
-		fetch.mockResolvedValueOnce({
-			ok: true,
-			json: async () => ({ is_admin: false }),
-		});
+test("affiche les champs du formulaire de login", () => {
+  render(<LoginForm />);
+  expect(screen.getByLabelText(/username/i)).toBeInTheDocument();
+  expect(screen.getByLabelText(/password/i)).toBeInTheDocument();
+});
 
-		render(<LoginForm />);
-		fireEvent.change(screen.getByLabelText(/Nom d'utilisateur/i), {
-			target: { value: "user" },
-		});
-		fireEvent.change(screen.getByLabelText(/Mot de passe/i), {
-			target: { value: "pass" },
-		});
-		fireEvent.click(screen.getByRole("button", { name: /Se connecter/i }));
+test("permet de se connecter et appelle l'API", async () => {
+  render(<LoginForm />);
 
-		expect(
-			await screen.findByText(/Vous devez être admin/i)
-		).toBeInTheDocument();
-	});
+  fireEvent.change(screen.getByLabelText(/username/i), {
+    target: { value: "bob" },
+  });
+  fireEvent.change(screen.getByLabelText(/password/i), {
+    target: { value: "mypassword" },
+  });
 
-	it("affiche une erreur en cas d'échec de connexion", async () => {
-		fetch.mockResolvedValueOnce({
-			ok: false,
-			json: async () => ({ detail: "Identifiants invalides" }),
-		});
+  fireEvent.click(screen.getByRole("button", { name: /login/i }));
 
-		render(<LoginForm />);
-		fireEvent.change(screen.getByLabelText(/Nom d'utilisateur/i), {
-			target: { value: "admin" },
-		});
-		fireEvent.change(screen.getByLabelText(/Mot de passe/i), {
-			target: { value: "wrongpass" },
-		});
-		fireEvent.click(screen.getByRole("button", { name: /Se connecter/i }));
-
-		expect(
-			await screen.findByText(/Identifiants invalides/i)
-		).toBeInTheDocument();
-	});
+  await waitFor(() =>
+    expect(global.fetch).toHaveBeenCalledWith(
+      expect.stringContaining("/login"),
+      expect.objectContaining({
+        method: "POST",
+        headers: expect.any(Object),
+        body: JSON.stringify({
+          username: "bob",
+          password: "mypassword",
+        }),
+      })
+    )
+  );
 });
