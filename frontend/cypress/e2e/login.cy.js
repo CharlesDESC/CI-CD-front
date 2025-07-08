@@ -1,22 +1,25 @@
 describe("Login Page", () => {
     it("should allow admin to log in", () => {
-      cy.visit("http://localhost:3000/login"); // Ajuste l'URL selon ton routing
+      cy.visit("http://localhost:3000/users");
   
-      // Vérifie que la page s'affiche
+      // Vérifie que le formulaire est visible
       cy.contains("Connexion Admin requise").should("be.visible");
   
-      // Vérifie les champs
-      cy.contains("Nom d'utilisateur").should("exist");
-      cy.contains("Mot de passe").should("exist");
+      // Cible les inputs par leur label
+      cy.get("label")
+        .contains("Nom d'utilisateur")
+        .find("input")
+        .type("testAdmin");
   
-      // Remplit le formulaire
-      cy.get("input[type='text']").type("adminuser");
-      cy.get("input[type='password']").type("password");
+      cy.get("label")
+        .contains("Mot de passe")
+        .find("input")
+        .type("testPass");
   
       // Clique sur le bouton
       cy.contains("Se connecter").click();
   
-      // Si tu veux attendre la requête et voir l'affichage admin :
+      // Vérifie que le composant admin est affiché
       cy.contains("Liste complète des utilisateurs", { timeout: 10000 }).should("be.visible");
     });
   });
