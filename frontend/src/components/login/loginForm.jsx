@@ -45,7 +45,7 @@ export const LoginForm = () => {
 		return (
 			<div>
 				<h2>Connexion Admin requise</h2>
-				<form onSubmit={handleLogin}>
+				<form onSubmit={handleLogin} className="card">
 					<div>
 						<label>
 							Nom d'utilisateur :

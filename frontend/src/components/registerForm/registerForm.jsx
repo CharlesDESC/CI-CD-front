@@ -54,7 +54,7 @@ export const RegisterForm = ({ onSubmit }) => {
 	};
 
 	return (
-		<form onSubmit={handleSubmit}>
+		<form onSubmit={handleSubmit} className="card">
 			<div>
 				<label>
 					Username:
