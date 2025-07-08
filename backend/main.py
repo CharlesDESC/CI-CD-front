@@ -1,7 +1,10 @@
 import mysql.connector
 import os
 from fastapi import FastAPI, HTTPException
+import jwt
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+load_dotenv()
 
 app = FastAPI()
 origins = ["http://localhost:3000"]
@@ -22,7 +25,6 @@ conn = mysql.connector.connect(
     port=3306,
     host=os.getenv("MYSQL_HOST")
 )
-
 
 @app.get("/users/public")
 async def get_users():
@@ -51,9 +53,21 @@ async def get_private_users():
 @app.post("/users")
 async def create_user(user: dict):
     cursor = conn.cursor()
-    sql_insert_Query = "INSERT INTO user (username, email, password, is_admin) VALUES (%s, %s, %s, %s)"
-    values = (user['username'], user['email'],
-              user['password'], user['is_admin'])
+    # Set is_admin to False by default if not provided
+    is_admin = user.get('is_admin', False)
+    sql_insert_Query = """
+        INSERT INTO user (firstName, lastName, email, password, birthDate, city, is_admin)
+        VALUES (%s, %s, %s, %s, %s, %s, %s)
+    """
+    values = (
+        user['firstName'],
+        user['lastName'],
+        user['email'],
+        user['password'],
+        user['birthDate'],
+        user['city'],
+        is_admin
+    )
     cursor.execute(sql_insert_Query, values)
     conn.commit()
     print("User created successfully")
@@ -75,9 +89,18 @@ async def delete_user(user_id: int):
 @app.post("/login")
 async def login(data: dict):
     cursor = conn.cursor()
-    query = "SELECT is_admin FROM user WHERE username = %s AND password = %s"
-    cursor.execute(query, (data['username'], data['password']))
+    query = "SELECT id, email, is_admin FROM user WHERE email = %s AND password = %s"
+    cursor.execute(query, (data['email'], data['password']))
     result = cursor.fetchone()
     if not result:
         raise HTTPException(status_code=401, detail="Identifiants invalides")
-    return {"is_admin": bool(result[0])}
+    user_id, user_email, is_admin = result
+    # Génération du token JWT
+    secret = os.getenv("JWT_SECRET")
+    payload = {
+        "user_id": user_id,
+        "email": user_email,
+        "is_admin": bool(is_admin)
+    }
+    token = jwt.encode(payload, secret, algorithm="HS256")
+    return {"token": token}
