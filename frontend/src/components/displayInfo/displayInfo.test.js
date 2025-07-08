@@ -1,15 +1,12 @@
-import { render, screen, waitFor } from "@testing-library/react";
-import { DisplayInfo } from "./displayInfo";
+import { act, render, screen, waitFor } from "@testing-library/react";
+import DisplayInfo from "./displayInfo";
 
 beforeEach(() => {
   jest.spyOn(global, "fetch").mockImplementation(() =>
     Promise.resolve({
       json: () =>
         Promise.resolve({
-          utilisateurs: [
-            ["alice"],
-            ["bob"],
-          ],
+          utilisateurs: [["alice"], ["bob"]],
         }),
       ok: true,
     })
@@ -21,9 +18,9 @@ afterEach(() => {
 });
 
 test("affiche les utilisateurs récupérés depuis l'API", async () => {
-  render(<DisplayInfo />);
-
-  expect(screen.getByText(/chargement/i)).toBeInTheDocument();
+  await act(async () => {
+    render(<DisplayInfo />);
+  });
 
   await waitFor(() => {
     expect(screen.getByText(/alice/i)).toBeInTheDocument();

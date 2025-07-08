@@ -5,5 +5,5 @@ PyJWT
 pydantic
 python-dotenv
 httpx
-pytest-asynci
-pytesto
+pytest-asyncio
+pytest

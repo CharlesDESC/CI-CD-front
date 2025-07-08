@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { DisplayInfo } from "../displayInfo/displayInfo";
+import DisplayInfo from "../displayInfo/displayInfo";
 
 const SERVER_URL = process.env.REACT_APP_SERVER_URL;
 
