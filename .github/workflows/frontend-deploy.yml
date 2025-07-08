@@ -14,13 +14,21 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Install dependencies
+        working-directory: ./frontend
+
         run: npm ci
 
       - name: Run tests
+        working-directory: ./frontend
+
         run: npm run test
 
       - name: Build frontend
+        working-directory: ./frontend
+
         run: npm run build
 
       - name: Deploy frontend
+        working-directory: ./frontend
+
         run: echo "Deploying frontend..."
