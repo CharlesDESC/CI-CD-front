@@ -7,9 +7,10 @@ export const DisplayInfo = () => {
 
 	const fetchUsers = async () => {
 		try {
+			const token = localStorage.getItem("jwt");
 			const usersResponse = await fetch(`${SERVER_URL}/users/private`, {
 				headers: {
-					"X-Admin": "true",
+					Authorization: `Bearer ${token}`,
 				},
 			});
 			if (!usersResponse.ok) {
@@ -32,8 +33,12 @@ export const DisplayInfo = () => {
 			return;
 
 		try {
+			const token = localStorage.getItem("jwt");
 			const response = await fetch(`${SERVER_URL}/users/${userId}`, {
 				method: "DELETE",
+				headers: {
+					Authorization: `Bearer ${token}`,
+				},
 			});
 			if (!response.ok) {
 				const data = await response.json();
@@ -59,7 +64,7 @@ export const DisplayInfo = () => {
 					<div key={user[0]}>
 						ID: {user[0]}, Username: {user[1]}, Email: {user[2]}, Admin:{" "}
 						{user[3] ? "Oui" : "Non"}{" "}
-						<button onClick={() => handleDelete(user[0])}>delete</button>
+						<button onClick={() => handleDelete(user[0])}>Supprimer</button>
 					</div>
 				))
 			)}

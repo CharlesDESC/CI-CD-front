@@ -28,6 +28,8 @@ services:
       - MYSQL_DATABASE
       - MYSQL_ROOT_PASSWORD
       - MYSQL_ROOT_USER
+    env_file:
+      - .env
     volumes:
       - .:/server
     depends_on:

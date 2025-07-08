@@ -28,8 +28,9 @@ export const LoginForm = () => {
 			}
 
 			const data = await response.json();
-
-			if (data.is_admin) {
+			localStorage.setItem("jwt", data.access_token);
+			const decodedPayload = JSON.parse(atob(data.access_token.split('.')[1]));
+			if (decodedPayload.is_admin) {
 				setIsAdmin(true);
 			} else {
 				setError("Vous devez être admin pour accéder à cette page.");
