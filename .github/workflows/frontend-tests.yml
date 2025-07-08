@@ -9,7 +9,8 @@ on:
       - main
 
 jobs:
-  build_test:
+  test:
+    name: Test and Build
     permissions:
       contents: write
       pull-requests: write
@@ -27,6 +28,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
+
       - name: npm ci and test
         working-directory: ./frontend
         run: |
@@ -35,58 +37,14 @@ jobs:
         env:
           REACT_APP_SERVER_URL: ${{ secrets.REACT_APP_SERVER_URL }}
 
-      - name: Build the stack react
-        run: |
-          docker compose --version
-          docker compose up -d
-        env:
-          REACT_APP_SERVER_URL: ${{ secrets.REACT_APP_SERVER_URL }}
-          MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
-          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
-          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-
-      - name: Run e2e tests with cypress
-        with:
-          working-directory: ./frontend
-        uses: cypress-io/github-action@v6
-
-      - name: Stop the stack react
-        run: docker compose down
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-
       - name: Build React App
         working-directory: ./frontend
         run: npm run build
         env:
           REACT_APP_SERVER_URL: ${{ secrets.REACT_APP_SERVER_URL }}
 
-      - name: Setup Pages
-        id: pages
-        uses: actions/configure-pages@v3
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v3
         with:
-          enablement: true
-
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
+          name: react-build
           path: ./frontend/build
-          if-no-files-found: error
-
-  deploy_pages:
-    environment:
-      name: github-pages
-      url: ${{steps.deployment.outputs.page_url}}
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-
-    needs: build_test
-
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4

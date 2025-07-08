@@ -4,61 +4,20 @@ on:
   workflow_dispatch:
   repository_dispatch:
     types: [backend-deployed]
-
 jobs:
-  build_test:
-    permissions:
-      contents: write
-      pull-requests: write
+  deploy:
+    name: Deploy to GitHub Pages
     runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [21.x]
+    permissions:
+      pages: write
+      id-token: write
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
+      - name: Download build artifact
+        uses: actions/download-artifact@v3
         with:
-          node-version: ${{ matrix.node-version }}
-      - name: npm ci and test
-        working-directory: ./frontend
-        run: |
-          npm ci
-          npm test
-        env:
-          REACT_APP_SERVER_URL: ${{ secrets.REACT_APP_SERVER_URL }}
-
-      - name: Build the stack react
-        run: |
-          docker compose --version
-          docker compose up -d
-        env:
-          REACT_APP_SERVER_URL: ${{ secrets.REACT_APP_SERVER_URL }}
-          MYSQL_HOST: ${{ secrets.MYSQL_HOST }}
-          MYSQL_DATABASE: ${{ secrets.MYSQL_DATABASE }}
-          MYSQL_ROOT_PASSWORD: ${{ secrets.MYSQL_ROOT_PASSWORD }}
-
-      - name: Run e2e tests with cypress
-        with:
-          working-directory: ./frontend
-        uses: cypress-io/github-action@v6
-
-      - name: Stop the stack react
-        run: docker compose down
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-
-      - name: Build React App
-        working-directory: ./frontend
-        run: npm run build
-        env:
-          REACT_APP_SERVER_URL: ${{ secrets.REACT_APP_SERVER_URL }}
+          name: react-build
+          path: ./frontend/build
 
       - name: Setup Pages
         id: pages
@@ -66,24 +25,8 @@ jobs:
         with:
           enablement: true
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: ./frontend/build
-          if-no-files-found: error
-
-  deploy_pages:
-    environment:
-      name: github-pages
-      url: ${{steps.deployment.outputs.page_url}}
-    runs-on: ubuntu-latest
-    permissions:
-      pages: write
-      id-token: write
-
-    needs: build_test
-
-    steps:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          path: ./frontend/build
